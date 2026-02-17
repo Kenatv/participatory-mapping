@@ -64,20 +64,17 @@
     
     <!-- Information box -->
     <div id="info">
-        <h3>A Minimum Viable Participatory Mapping Project</h3>
-        <h4>Bo Zhao | University of Washington </h4>
+        <h3>UW Student Study Areas</h3>
+        <h4>Ken Thuleeratanarom | University of Washington </h4>
         <!-- Introduction to the participatory mapping solution -->
         <p>
-            This map is a minimum viable solution to participatory mapping.
-            Users can contribute their local knowledge by clicking on the map,
-            submitting their information, and viewing it represented as a red dot.
-            Existing contributions can also be viewed as red dots. While this map only offers
-            basic functionality, it can be expanded or repurposed to build your own participatory mapping projects. To help you envision what this map can assist you, you can take a look at a few existing projects, such as <a href="https://hgis.uw.edu/lgbtqspaces/" target="_blank"><b>Shifting LGBTQ+ spaces</b></a>,
-            <a href="https://hgis.uw.edu/chop"> <b>Archiving the CHOP</b></a> and <a href="https://www.queeringthemap.com/" target="_blank"><b>Queering the Map</b></a>.
-            An instruction can be found 
-            <a href="https://www.github.com/jakobzhao/participatory-mapping" target="_blank">here</a>.
-            <i>Last update: June 23, 2023</i>
+            This map allows us to share our favorite study spots around campus
+            that students find to be relaxing and beneficial.
+            Click anywhere on the map to add more spots to the area. 
         </p> 
+        <p>
+            <i>Created for participatory mapping lab</i>
+        </p>
     </div>
     
     <!-- JavaScript code for the interactive map and data submission -->
@@ -115,6 +112,8 @@
                     'properties': {
                         'contributor': data.rows[i].contributor,
                         'content': data.rows[i].content,
+                        'email': data.rows[i].email,
+                        'category': data.rows[i].category
                     },
                     'geometry': {
                         'type': 'Point',
@@ -137,7 +136,14 @@
                 'source': 'places',
                 'paint': {
                     'circle-radius': 6,
-                    'circle-color': '#B42222'
+                    'circle-color': [
+                        'match',
+                        ['get', 'category'],
+                        'Study', '#4361ee',
+                        'Relax', '#2a9d8f',
+                        'Food', '#f4a261',
+                        '#4b2e83'
+                    ],
                 }
             });
         });
@@ -169,7 +175,19 @@
             }
 
             // Create the HTML content for the contribution popup
-            const popupContent = '<div id="popup"><input type="text" id="name" placeholder="Input your name here..."><input type="text" id="content" placeholder="Input your message here..."><button id="submit">submit</button></div>';
+            const popupContent = `
+                <div id="popup">
+                    <input type="text" id="name" placeholder="Your name">
+                    <input type="email" id="email" placeholder="Your UW email">
+                    <select id="category">
+                        <option value="Study">Study Spot</option>
+                        <option value="Relax">Relaxation Spot</option>
+                        <option value="Food">Food Spot</option>
+                    </select>
+                    <input type="text" id="content" placeholder="What stands out about this spot">
+                    <button id="submit">Submit</button>
+                </div>
+            `;
 
             // Create a new popup and set its content
             popup = new maplibregl.Popup({ closeOnClick: false })
@@ -185,6 +203,8 @@
         // Function to handle the submission of a new record
         async function submitNewRecord() {
             let contributor = document.getElementById('name').value;
+            let email = document.getElementById('email').value;
+            let category = document.getElementById('category').value;
             let content = document.getElementById('content').value;
             let lngLat = popup.getLngLat();
 
@@ -192,6 +212,8 @@
             let newRecord = new URLSearchParams();
             newRecord.append('contributor', contributor);
             newRecord.append('content', content);
+            newRecord.append('email', email);
+            newRecord.append('category', category);
             newRecord.append('lng', lngLat.lng);
             newRecord.append('lat', lngLat.lat);
 
@@ -215,12 +237,15 @@
                     'properties': {
                         'contributor': contributor,
                         'content': content,
+                        'email': email,
+                        'category': category
                     },
                     'geometry': {
                         'type': 'Point',
                         'coordinates': [lngLat.lng, lngLat.lat]
                     }
                 });
+
                 map.getSource('places').setData(geojson);
             }
         }
