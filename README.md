@@ -4,6 +4,10 @@
 
 This participatory mapping project allows University of Washington students to contribute their favorite study and relaxation spots on campus.
 
+Preview:
+![map](img/screenshot.png)
+
+
 To Visit the Map go to:
 https://kenatv.github.io/participatory-mapping/
 
